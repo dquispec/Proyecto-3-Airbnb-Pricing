@@ -1,41 +1,33 @@
-# Proyecto 3: Pricing de Listings Airbnb (Buenos Aires)
+# Proyecto 3: Pricing de Listings Airbnb - Buenos Aires (Nivel Experto)
 
-Sistema de prediccion de precio para listings de Airbnb en Buenos Aires. Cuatro niveles que cubren desde EDA descriptivo hasta pipeline MLOps con pricing dinamico y monitoreo de drift.
+Pipeline MLOps de pricing dinamico para listings de Airbnb en Buenos Aires. Integra modelo de prediccion de precio con intervalos de confianza empiricos (P10-P90), multiplicadores estacionales desde datos de calendario y monitoreo de drift automatico.
 
 ## Contexto
 
 El dataset **Inside Airbnb (Buenos Aires)** contiene **~30,000 listings activos** en la ciudad, con sus caracteristicas estructurales (tipo, capacidad, ubicacion), atributos del host (superhost, antiguedad), precio en ARS, disponibilidad anual y reviews historicas.
 
-El dataset se compone de 3 archivos:
+El dataset se compone de 2 archivos principales:
 - `listings.csv.gz`: cada listing con 75 columnas de atributos.
-- `calendar.csv.gz`: precio y disponibilidad por dia (~10 millones de filas, usado en experto).
-- `reviews.csv.gz`: texto de cada review (no usado en este proyecto).
+- `calendar.csv.gz`: precio y disponibilidad por dia (~10 millones de filas, usado para pricing dinamico).
 
 Particularidad: el precio viene como string con formato `$1,234.00`. Requiere limpieza antes de cualquier analisis numerico.
 
-## Estructura del proyecto
+## Contenido del repositorio
 
 ```
-Proyecto 3 - Airbnb Pricing/
-|-- 01-data/                          # listings.csv.gz, calendar.csv.gz, reviews.csv.gz
-|-- 02-script/                        # Notebooks Jupyter (.ipynb)
-|   |-- airbnb_basico.ipynb
-|   |-- airbnb_intermedio.ipynb
-|   |-- airbnb_avanzado.ipynb
-|   |-- airbnb_experto.ipynb
-|-- 03-resultados/                    # Outputs generados
-|-- 04-explicacion del codigo/        # PDFs con explicacion linea por linea
+Proyecto-3-Airbnb-Pricing/
+|-- airbnb_experto.ipynb    # Pipeline MLOps de pricing dinamico
 |-- README.md
 ```
 
-## Niveles del proyecto
+## Pipeline experto
 
-| Nivel | Tecnica | Output principal | Resultado clave |
-|---|---|---|---|
-| Basico | EDA descriptivo (8 angulos) | 8 graficos + CSV de KPIs | Palermo 26% de listings, distribucion log-normal |
-| Intermedio | 4 modelos de regresion (Linear, Ridge, Lasso, RF) sobre features tabulares + Haversine | Comparacion + feature importance | RF R^2 = 0.62, MAPE 37% |
-| Avanzado | XGBoost + tuning + elasticidad precio-ocupacion + segmentacion de hosts (KMeans) + SHAP | Modelo tuned + recomendaciones de precio | R^2 = 0.70, elasticidad -0.42 |
-| Experto | Pipeline MLOps + API con intervalo P10-P90 + pricing dinamico desde calendar + drift PSI/KS | Sistema productizable con pricing dinamico | Multiplicadores por dia de semana y mes |
+| Componente | Descripcion | Resultado |
+|------------|-------------|-----------|
+| Pipeline atomico | Preprocesamiento + Random Forest sin data leakage | R^2 = 0.70 |
+| API con intervalos | Prediccion de precio con rango empirico P10-P90 del bosque | Incertidumbre cuantificada |
+| Pricing dinamico | Multiplicadores por dia de semana y mes desde calendar.csv.gz | Sabado +24%, martes -12% |
+| Drift monitoring | PSI + Kolmogorov-Smirnov sobre features de entrada | Deteccion de cambios de mercado |
 
 ## Hallazgos principales
 
@@ -49,32 +41,19 @@ Proyecto 3 - Airbnb Pricing/
 ## Instalacion
 
 ```bash
-pip install pandas numpy matplotlib seaborn scikit-learn scipy
-# Opcionales:
-pip install xgboost shap mlflow joblib
+pip install pandas numpy matplotlib seaborn scikit-learn scipy xgboost shap mlflow joblib
 ```
 
 ## Como usar
 
-1. Descargar el dataset desde [Inside Airbnb](http://insideairbnb.com/get-the-data/) (seccion Buenos Aires) y colocar los archivos `.csv.gz` en `01-data/`.
-2. Abrir cualquiera de los notebooks de `02-script/` en Jupyter o VS Code.
+1. Descargar el dataset desde [Inside Airbnb](http://insideairbnb.com/get-the-data/) (seccion Buenos Aires) y colocar `listings.csv.gz` y `calendar.csv.gz` en la misma carpeta del notebook.
+2. Abrir `airbnb_experto.ipynb` en Jupyter o VS Code.
 3. Ejecutar las celdas en orden.
 
 ## Habilidades demostradas
 
-- EDA descriptivo con foco en datos geograficos
-- Limpieza de strings de moneda
-- Feature engineering: distancia geografica con Haversine, conteo de amenities, ocupacion proxy
-- Regresion clasica (Linear, Ridge, Lasso)
-- Tree-based models (Random Forest, XGBoost)
-- Hyperparameter tuning con RandomizedSearchCV
-- Analisis economico: elasticidad precio-demanda (log-log fit)
-- Segmentacion de hosts con KMeans
-- Interpretabilidad con permutation importance y SHAP
-- MLOps: pipeline atomico, API con intervalos de prediccion empiricos (P10-P90 del bosque)
-- Pricing dinamico con multiplicadores estacionales
+- Pipeline atomico sin data leakage
+- API con intervalos de prediccion empiricos (P10-P90 del bosque de arboles)
+- Pricing dinamico con multiplicadores estacionales desde datos reales de calendario
+- Feature engineering geografico (distancia Haversine, barrio)
 - Monitoreo de drift PSI + KS
-
-## Documentacion detallada
-
-Cada notebook tiene un PDF asociado en `04-explicacion del codigo/` con explicacion linea por linea.
